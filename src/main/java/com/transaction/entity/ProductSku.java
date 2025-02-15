@@ -13,8 +13,8 @@ import java.util.UUID;
 public class ProductSku {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID productSkuId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer productSkuId;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)

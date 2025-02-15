@@ -4,10 +4,12 @@ import com.transaction.common.BaseResponse;
 import com.transaction.common.ResultCode;
 import com.transaction.entity.Merchant;
 import com.transaction.service.MerchantService;
+import com.transaction.service.PrepaidCashAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,8 +21,10 @@ public class MerchantController {
     private static final Logger logger = LoggerFactory.getLogger(MerchantController.class);
 
     private final MerchantService merchantService;
+    private final PrepaidCashAccountService prepaidCashAccountService;
 
-    public MerchantController(MerchantService merchantService) {
+    public MerchantController(MerchantService merchantService,  PrepaidCashAccountService prepaidCashAccountService) {
+        this.prepaidCashAccountService = prepaidCashAccountService;
         this.merchantService = merchantService;
     }
 
@@ -50,5 +54,16 @@ public class MerchantController {
         logger.debug("Deleting merchant with ID: {}", id);
         merchantService.deleteMerchant(id);
         return BaseResponse.success(null);
+    }
+
+    @PostMapping("/{merchantId}/withdraw")
+    public BaseResponse<String> withdraw(@PathVariable UUID merchantId, @RequestParam BigDecimal amount) {
+        logger.info("Merchant {} is withdrawing: {}", merchantId, amount);
+
+        if (prepaidCashAccountService.withdraw(merchantId, amount)) {
+            return BaseResponse.success("Withdrawal successful");
+        } else {
+            return BaseResponse.error(ResultCode.INVALID_REQUEST);
+        }
     }
 }

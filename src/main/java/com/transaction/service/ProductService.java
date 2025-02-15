@@ -1,6 +1,8 @@
 package com.transaction.service;
 
 import com.transaction.common.ResultCode;
+import com.transaction.dto.ProductRequest;
+import com.transaction.dto.ProductResponse;
 import com.transaction.entity.Merchant;
 import com.transaction.entity.Product;
 import com.transaction.entity.ProductSku;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,7 +35,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product createProductWithSkus(Product product, List<ProductSku> productSkus) {
+    public ProductResponse createProductWithSkus(Product product, List<ProductSku> productSkus) {
         logger.info("Creating product for merchant UUID: {}", product.getMerchantUuid());
 
         // 檢查 Merchant 是否存在
@@ -49,7 +52,6 @@ public class ProductService {
             sku.setProduct(savedProduct);
             productSkuRepository.save(sku);
         }
-
-        return savedProduct;
+        return new ProductResponse(savedProduct, productSkus);
     }
 }

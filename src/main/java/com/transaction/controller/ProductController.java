@@ -1,8 +1,11 @@
 package com.transaction.controller;
 
+import com.transaction.annotation.ApiLock;
+import com.transaction.common.ApiLockModules;
 import com.transaction.common.BaseResponse;
 import com.transaction.common.ResultCode;
 import com.transaction.dto.ProductRequest;
+import com.transaction.dto.ProductResponse;
 import com.transaction.entity.Product;
 import com.transaction.entity.ProductSku;
 import com.transaction.service.ProductService;
@@ -23,20 +26,20 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @ApiLock(moduleName = ApiLockModules.CREATE_PRODUCT, lockName = "#request.merchantUuid")
     @PostMapping
-    public BaseResponse<Product> createProduct(@RequestBody ProductRequest request) {
+    public BaseResponse<ProductResponse> createProduct(@RequestBody ProductRequest request) {
         logger.info("Received request to create product: {}", request.getProductName());
 
         try {
             Product product = new Product();
             product.setProductName(request.getProductName());
-            product.setProductDesc(request.getProductDesc());
             product.setMerchantUuid(request.getMerchantUuid());
-
+            product.setProductDesc(request.getProductDesc());
             List<ProductSku> productSkus = request.getProductSkus();
 
-            Product savedProduct = productService.createProductWithSkus(product, productSkus);
-            return BaseResponse.success(savedProduct);
+            ProductResponse response = productService.createProductWithSkus(product, productSkus);
+            return BaseResponse.success(response);
         } catch (Exception e) {
             logger.error("Error creating product: ", e);
             return BaseResponse.error(ResultCode.INVALID_REQUEST);
