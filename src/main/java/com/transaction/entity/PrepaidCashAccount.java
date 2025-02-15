@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "prepaid_cash_account")
-public class PrepaidCashAccount {
+public class PrepaidCashAccount extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 使用自增 Integer

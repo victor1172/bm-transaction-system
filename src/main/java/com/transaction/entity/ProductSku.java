@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "product_sku")
-public class ProductSku {
+public class ProductSku extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

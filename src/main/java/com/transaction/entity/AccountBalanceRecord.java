@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "account_balance_record")
-public class AccountBalanceRecord {
+public class AccountBalanceRecord extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "merchant")
-public class Merchant {
+public class Merchant extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
