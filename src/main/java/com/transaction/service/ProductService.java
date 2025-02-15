@@ -1,7 +1,6 @@
 package com.transaction.service;
 
 import com.transaction.common.ResultCode;
-import com.transaction.dto.ProductRequest;
 import com.transaction.dto.ProductResponse;
 import com.transaction.entity.Merchant;
 import com.transaction.entity.Product;
@@ -14,10 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ProductService {
@@ -49,7 +46,7 @@ public class ProductService {
 
         // 設定 ProductSku 的關聯，並儲存 Skus
         for (ProductSku sku : productSkus) {
-            sku.setProduct(savedProduct);
+            sku.setProductId(savedProduct.getProductId());
             productSkuRepository.save(sku);
         }
         return new ProductResponse(savedProduct, productSkus);

@@ -1,5 +1,6 @@
 package com.transaction.service;
 
+import com.transaction.dto.UserRequest;
 import com.transaction.entity.ClientUser;
 import com.transaction.repository.UserRepository;
 import org.slf4j.Logger;
@@ -34,8 +35,12 @@ public class UserService {
         return userRepository.findByUserEmail(email);
     }
 
-    public ClientUser createUser(ClientUser user) {
-        logger.info("Creating new user: {}", user.getUserEmail());
+    public ClientUser createUser(UserRequest request) {
+        logger.info("Creating new user: {}", request.getUserEmail());
+        ClientUser user = new ClientUser();
+        user.setUserName(request.getUserName());
+        user.setUserEmail(request.getUserEmail());
+        user.setUserPassword(request.getUserPassword());
         return userRepository.save(user);
     }
 

@@ -2,6 +2,8 @@ package com.transaction.controller;
 
 import com.transaction.common.BaseResponse;
 import com.transaction.common.ResultCode;
+import com.transaction.dto.DepositRequest;
+import com.transaction.dto.UserRequest;
 import com.transaction.entity.ClientUser;
 import com.transaction.service.PrepaidCashAccountService;
 import com.transaction.service.UserService;
@@ -9,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,9 +44,11 @@ public class UserController {
     }
 
     @PostMapping
-    public BaseResponse<ClientUser> createUser(@RequestBody ClientUser user) {
-        logger.debug("Creating new user: {}", user.getUserEmail());
-        return BaseResponse.success(userService.createUser(user));
+    public BaseResponse<ClientUser> createUser(@RequestBody UserRequest request) {
+        logger.debug("Creating new user: {}", request.getUserEmail());
+        ClientUser user = userService.createUser(request);
+        prepaidCashAccountService.createAccount(user.getUserUuid(), "USER");
+        return BaseResponse.success(user);
     }
 
     @DeleteMapping("/{id}")
@@ -55,11 +58,11 @@ public class UserController {
         return BaseResponse.success(null);
     }
 
-    @PostMapping("/{userId}/deposit")
-    public BaseResponse<String> deposit(@PathVariable UUID userId, @RequestParam BigDecimal amount) {
-        logger.info("User {} is depositing: {}", userId, amount);
+    @PostMapping("/deposit")
+    public BaseResponse<String> deposit(@RequestBody DepositRequest request) {
+        logger.info("User {} is depositing: {}", request.getUserId(),request.getAmount());
 
-        if (prepaidCashAccountService.deposit(userId, amount)) {
+        if (prepaidCashAccountService.deposit(request.getUserId(), request.getAmount())) {
             return BaseResponse.success("Deposit successful");
         } else {
             return BaseResponse.error(ResultCode.INVALID_REQUEST);

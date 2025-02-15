@@ -23,7 +23,4 @@ public class Merchant {
 
     @Column(nullable = false)
     private String merchantPassword;
-
-    @Column(nullable = true)
-    private Integer prepaidCashAccountId;
 }

@@ -16,12 +16,14 @@ public class ProductSku {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer productSkuId;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(nullable = false)
+    private Integer productId;
 
     @Column(nullable = false, length = 255)
     private String productSkuName;
+
+    @Column(nullable = false)
+    private Integer qty;
 
     @Column(nullable = false)
     private BigDecimal productSkuPrice;

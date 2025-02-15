@@ -22,7 +22,4 @@ public class ClientUser {
 
     @Column(nullable = false)
     private String userPassword;
-
-    @Column(nullable = true)
-    private Integer prepaidCashAccountId;
 }

@@ -2,6 +2,8 @@ package com.transaction.controller;
 
 import com.transaction.common.BaseResponse;
 import com.transaction.common.ResultCode;
+import com.transaction.dto.DepositRequest;
+import com.transaction.dto.MerchantRequest;
 import com.transaction.entity.Merchant;
 import com.transaction.service.MerchantService;
 import com.transaction.service.PrepaidCashAccountService;
@@ -9,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,9 +45,12 @@ public class MerchantController {
     }
 
     @PostMapping
-    public BaseResponse<Merchant> createMerchant(@RequestBody Merchant merchant) {
-        logger.debug("Creating new merchant: {}", merchant.getMerchantEmail());
-        return BaseResponse.success(merchantService.createMerchant(merchant));
+    public BaseResponse<Merchant> createMerchant(@RequestBody MerchantRequest request) {
+        logger.debug("Creating new merchant: {}", request.getMerchantEmail());
+
+        Merchant merchant = merchantService.createMerchant(request);
+        prepaidCashAccountService.createAccount(merchant.getMerchantUuid(), "MERCHANT");
+        return BaseResponse.success(merchant);
     }
 
     @DeleteMapping("/{id}")
@@ -56,11 +60,11 @@ public class MerchantController {
         return BaseResponse.success(null);
     }
 
-    @PostMapping("/{merchantId}/withdraw")
-    public BaseResponse<String> withdraw(@PathVariable UUID merchantId, @RequestParam BigDecimal amount) {
-        logger.info("Merchant {} is withdrawing: {}", merchantId, amount);
+    @PostMapping("/withdraw")
+    public BaseResponse<String> withdraw(@RequestBody DepositRequest request) {
+        logger.info("Merchant {} is withdrawing: {}", request.getUserId(), request.getAmount());
 
-        if (prepaidCashAccountService.withdraw(merchantId, amount)) {
+        if (prepaidCashAccountService.withdraw(request.getUserId(), request.getAmount())) {
             return BaseResponse.success("Withdrawal successful");
         } else {
             return BaseResponse.error(ResultCode.INVALID_REQUEST);

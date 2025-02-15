@@ -1,5 +1,6 @@
 package com.transaction.service;
 
+import com.transaction.dto.MerchantRequest;
 import com.transaction.entity.Merchant;
 import com.transaction.repository.MerchantRepository;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,11 @@ public class MerchantService {
         return merchantRepository.findByMerchantEmail(email);
     }
 
-    public Merchant createMerchant(Merchant merchant) {
+    public Merchant createMerchant(MerchantRequest request) {
+        Merchant merchant = new Merchant();
+        merchant.setMerchantName(request.getMerchantName());
+        merchant.setMerchantEmail(request.getMerchantEmail());
+        merchant.setMerchantPassword(request.getMerchantPassword());
         return merchantRepository.save(merchant);
     }
 
