@@ -64,10 +64,10 @@ public class BatchSaleCheckService {
                 PrepaidCashAccount account = accountOpt.get();
                 // 使用 Native SQL 查詢 order_modify 總成本變動
                 Query query = entityManager.createNativeQuery("""
-                SELECT COALESCE(SUM(total_cost_diff), 0) 
-                FROM order_modify 
-                WHERE merchant_uuid = :merchantUuid 
-                AND created_at BETWEEN :startOfDay AND :endOfDay
+                    SELECT COALESCE(SUM(total_cost_diff), 0) 
+                    FROM order_modify 
+                    WHERE merchant_uuid = :merchantUuid 
+                    AND created_at BETWEEN :startOfDay AND :endOfDay
             """);
                 query.setParameter("merchantUuid", merchantUuid);
                 query.setParameter("startOfDay", startOfDay);
