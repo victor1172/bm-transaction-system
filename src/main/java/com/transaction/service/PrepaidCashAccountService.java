@@ -4,10 +4,8 @@ import com.transaction.entity.AccountBalanceRecord;
 import com.transaction.entity.PrepaidCashAccount;
 import com.transaction.repository.AccountBalanceRecordRepository;
 import com.transaction.repository.PrepaidCashAccountRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -16,15 +14,16 @@ import java.util.UUID;
 @Service
 public class PrepaidCashAccountService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PrepaidCashAccountService.class);
     private final PrepaidCashAccountRepository accountRepository;
-    private AccountBalanceRecordRepository balanceRecordRepository;
+    private final AccountBalanceRecordRepository balanceRecordRepository;
 
-    public PrepaidCashAccountService(PrepaidCashAccountRepository accountRepository) {
+    @Autowired
+    public PrepaidCashAccountService(PrepaidCashAccountRepository accountRepository,
+                                   AccountBalanceRecordRepository balanceRecordRepository) {
         this.accountRepository = accountRepository;
+        this.balanceRecordRepository = balanceRecordRepository;
     }
 
-    @Transactional
     public PrepaidCashAccount createAccount(UUID ownerId, String accountType) {
         PrepaidCashAccount account = new PrepaidCashAccount();
         account.setOwnerId(ownerId);
@@ -33,46 +32,45 @@ public class PrepaidCashAccountService {
         return accountRepository.save(account);
     }
 
-    @Transactional
     public boolean deposit(UUID ownerId, BigDecimal amount) {
         Optional<PrepaidCashAccount> accountOpt = accountRepository.findByOwnerId(ownerId);
-        if (accountOpt.isPresent()) {
-            PrepaidCashAccount account = accountOpt.get();
-            account.deposit(amount);
-            accountRepository.save(account);
-
-            // 記錄存款交易
-            AccountBalanceRecord record = new AccountBalanceRecord();
-            record.setAccountId(account.getAccountId());
-            record.setOwnerId(ownerId);
-            record.setTransactionType("DEPOSIT");
-            record.setAmount(amount);
-            balanceRecordRepository.save(record);
-
-            return true;
+        if (accountOpt.isEmpty()) {
+            return false;
         }
-        return false;
+
+        PrepaidCashAccount account = accountOpt.get();
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+
+        AccountBalanceRecord record = new AccountBalanceRecord();
+        record.setAccountId(account.getAccountId());
+        record.setAmount(amount);
+        record.setTransactionType("DEPOSIT");
+        balanceRecordRepository.save(record);
+
+        return true;
     }
 
-    @Transactional
     public boolean withdraw(UUID ownerId, BigDecimal amount) {
         Optional<PrepaidCashAccount> accountOpt = accountRepository.findByOwnerId(ownerId);
-        if (accountOpt.isPresent()) {
-            PrepaidCashAccount account = accountOpt.get();
-            if (account.withdraw(amount)) {
-                accountRepository.save(account);
-
-                // 記錄提款交易
-                AccountBalanceRecord record = new AccountBalanceRecord();
-                record.setAccountId(account.getAccountId());
-                record.setOwnerId(ownerId);
-                record.setTransactionType("WITHDRAW");
-                record.setAmount(amount.negate()); // 提款為負數
-                balanceRecordRepository.save(record);
-
-                return true;
-            }
+        if (accountOpt.isEmpty()) {
+            return false;
         }
-        return false;
+
+        PrepaidCashAccount account = accountOpt.get();
+        if (account.getBalance().compareTo(amount) < 0) {
+            return false;
+        }
+
+        account.setBalance(account.getBalance().subtract(amount));
+        accountRepository.save(account);
+
+        AccountBalanceRecord record = new AccountBalanceRecord();
+        record.setAccountId(account.getAccountId());
+        record.setAmount(amount.negate());
+        record.setTransactionType("WITHDRAW");
+        balanceRecordRepository.save(record);
+
+        return true;
     }
 }
